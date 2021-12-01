@@ -37,6 +37,12 @@
         $this->broker->izmeni("update banka set naziv='".$naziv."', sediste='".$sediste."', racun_prefiks='".$prefiks."', tip_id=".$tipId."  where".$id);
     }
 
+    public function kreirajEkspozituru($idBanke,$adresa,$brojTelefona){
+        $this->broker->izmeni("insert into ekspozitura(adresa,broj_telefona,banka_id) values('".$adresa."','".$brojTelefona."',".$idBanke.")");
+    }
+    public function obrisiEkspozituru($id,$idBanke){
+        $this->broker->izmeni("delete from ekspozitura where id=".$id." and banka_id=".$idBanke);
+    }
     private function kreirajBanku($element){
         return [
             "id"=>$element->id,
@@ -48,6 +54,7 @@
             ]
         ];
     } 
+    
 }
 
 ?>
