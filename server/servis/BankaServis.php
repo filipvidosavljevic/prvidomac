@@ -19,13 +19,19 @@
 
     public function vratiJedan($id){
         $data= $this->broker->ucitaj("select b.*, t.naziv as 'tip_banke' from banka b inner join tip_banke t on (t.id=b.tip_id) where b.id=".$id);
+        if(count($data)==0){
+            throw new Exception('Ne postoji banka sa datim id jem');
+        }
         $banka=$this->transformisiBanku($data[0]);
         $banka["ekspoziture"]=$this->broker->ucitaj("select id, adresa, broj_telefona as 'brojTelefona' from ekspozitura where banka_id=".$id);
         return $banka;
     }
 
     public function kreiraj($naziv,$prefiks,$sediste,$tipId) {
-        if(!intval($prefiks) || strlen($prefiks)!=3){
+        if(!intval($prefiks)){
+            throw new Exception('Prefiks nije broj');
+        }
+        if( strlen($prefiks)!=3){
             throw new Exception('Prefiks mora imati 3 cifre');
         }
         $banke=$this->broker->ucitaj("select id from banka where racun_prefiks=".$prefiks);
@@ -41,7 +47,10 @@
     }
 
     public function izmeni($id,$naziv,$prefiks,$sediste,$tipId){
-        if(!intval($prefiks) || strlen($prefiks)!=3){
+        if(!intval($prefiks)){
+            throw new Exception('Prefiks nije broj');
+        }
+        if( strlen($prefiks)!=3){
             throw new Exception('Prefiks mora imati 3 cifre');
         }
         $banke=$this->broker->ucitaj("select id from banka where racun_prefiks=".$prefiks);
@@ -50,7 +59,7 @@
                 throw new Exception('Banka sa datim prefiksom vec postoji');
             }
         }
-        $this->broker->upisi("update banka set naziv='".$naziv."', sediste='".$sediste."', racun_prefiks='".$prefiks."', tip_id=".$tipId."  where".$id);
+        $this->broker->upisi("update banka set naziv='".$naziv."', sediste='".$sediste."', racun_prefiks='".$prefiks."', tip_id=".$tipId."  where id=".$id);
     }
 
     public function kreirajEkspozituru($idBanke,$adresa,$brojTelefona){

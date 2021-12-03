@@ -63,7 +63,7 @@ class Controller{
             if($metoda!="POST"){
                 throw new Exception("Akcija se moze pozvati samo POST metodom");
             }
-            $this->bankaServis->kreiraj($_GET['id'],$_POST["naziv"],$_POST["prefiks"],$_POST["sediste"],$_POST["tipId"]);
+            $this->bankaServis->izmeni($_GET['id'],$_POST["naziv"],$_POST["prefiks"],$_POST["sediste"],$_POST["tipId"]);
             return null;
         }
         if($akcija=='banka.delete'){
