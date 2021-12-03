@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <title>Registar banaka</title>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Lista banaka</h1>
+        <div class="mt-5 mb-5">
+            <input type="text" class="form-control" id='pretraga' placeholder="Pretrazi banke...">
+        </div>
+        <div class="row">
+            <div class="col-8">
+                <div id='banke'>
+
+                </div>
+            </div>
+            <div class="col-4">
+                <form id='forma'>
+                    <h2>Kreiraj banku</h2>
+                    <label>Naziv banke</label>
+                    <input id="naziv" class="form-control" />
+                    <label>Prefiks racuna</label>
+                    <input id="prefiks" class="form-control" />
+                    <label>Sediste</label>
+                    <input id="sediste" class="form-control" />
+                    <label>Tip banke</label>
+                    <select id="tip" class="form-control"></select>
+                    <button class="btn btn-primary mt-2 form control" type="submit">Kreiraj</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script>
+        let banke = [];
+        $(document).ready(function () {
+
+            $.getJSON('server/index.php?akcija=tip.read', function (res) {
+                if (!res.status) {
+                    alert(res.error);
+                    return;
+                }
+                for (let tip of res.data) {
+                    $('#tip').append(`
+                        <option value='${tip.id}'>
+                            ${tip.naziv}
+                        </option>
+                    `)
+                }
+            })
+            ucitajBanke();
+            $('#forma').submit(function (e) {
+                e.preventDefault();
+                const naziv = $('#naziv').val();
+                const prefiks = $('#prefiks').val();
+                const sediste = $('#sediste').val();
+                const tip = $('#tip').val();
+                $.post('server/index.php?akcija=banka.create', {
+                    naziv,
+                    prefiks,
+                    sediste,
+                    tipId: tip
+                }, function (res) {
+                    res = JSON.parse(res);
+                    if (!res.status) {
+                        alert(res.error);
+                    }
+                    ucitajBanke();
+                })
+            })
+            $('#pretraga').change(function () {
+                iscrtaj();
+            })
+        })
+        function ucitajBanke() {
+            $.getJSON('server/index.php?akcija=banka.read', function (res) {
+                if (!res.status) {
+                    alert(res.error);
+                    return;
+                }
+                banke = res.data;
+                iscrtaj()
+            })
+        }
+        function iscrtaj() {
+            const pretraga = $('#pretraga').val();
+            const filtrirane = banke.filter(function (element) {
+                return element.naziv.toLocaleLowerCase().includes(pretraga.toLocaleLowerCase()) ||
+                    element.id == pretraga || element.sediste.toLocaleLowerCase().includes(pretraga.toLocaleLowerCase()) ||
+                    element.tip.naziv.toLocaleLowerCase().includes(pretraga.toLocaleLowerCase())
+            })
+
+            $('#banke').html(`
+            <div class='row mt-2 border-bottom'>
+                            <div class='col-2'>
+                              ID
+                            </div>
+                            <div class='col-2'>
+                              Naziv
+                            </div>
+                            <div class='col-2'>
+                              Prefiks
+                            </div>
+                            <div class='col-2'>
+                               Tip
+                            </div>
+                            <div class='col-2'>
+                               Sediste
+                            </div>
+                            <div class='col-2'>
+                                Izmeni
+                            </div>
+                        </div>
+            `);
+            for (let banka of filtrirane) {
+                $('#banke').append(`
+                        <div class='row mt-2 border-bottom align-items-center'>
+                            <div class='col-2'>
+                                ${banka.id}
+                            </div>
+                            <div class='col-2'>
+                                ${banka.naziv}
+                            </div>
+                            <div class='col-2'>
+                                ${banka.racunPrefiks}
+                            </div>
+                            <div class='col-2'>
+                                ${banka.tip.naziv}
+                            </div>
+                            <div class='col-2'>
+                                ${banka.sediste}
+                            </div>
+                            <div class='col-2'>
+                                    <a href='banka.html?id=${banka.id}'>
+                                        <button class='form-control btn btn-success'>Izmeni</button>
+                                    </a>
+                            </div>
+                        </div>
+                    `)
+            }
+        }
+    </script>
+</body>
+
+</html>
